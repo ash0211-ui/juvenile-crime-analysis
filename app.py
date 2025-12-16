@@ -234,7 +234,7 @@ elif menu == "3. [핵심] 액션플랜 시뮬레이터":
         # 1. Family-Driven Crimes (Social/Intellectual): Extortion, Embezzlement, Forgery
         social_crimes = ['공갈', '횡령', '문서'] 
         # 2. Economic-Driven Crimes (Violence/Impulse): Violence, Injury, Assault
-        violent_crimes = ['폭력', '상해', '폭행행위등', '강도', '강간', '방화']
+        violent_crimes = ['폭력', '상해', '폭행', '폭행행위등', '강도', '강간', '방화', '살인']
         # 3. Habitual/Strict Crimes: Theft, Fraud, etc.
         habitual_crimes = ['절도', '사기', '장물']
 
