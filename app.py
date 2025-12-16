@@ -230,38 +230,21 @@ elif menu == "3. [핵심] 액션플랜 시뮬레이터":
         st.markdown("---")
         st.subheader("🩺 맞춤형 처방 (Action Plan)")
         
-        # Categorize Crime Type for Logic
-        economic_crimes = ['절도', '사기', '횡령', '장물', '공갈']
+        # Categorize Crime Type for Logic (Updated based on Tree Analysis)
+        # 1. Family-Driven Crimes (Social/Intellectual): Extortion, Embezzlement, Forgery
+        social_crimes = ['공갈', '횡령', '문서'] 
+        # 2. Economic-Driven Crimes (Violence/Impulse): Violence, Injury, Assault
         violent_crimes = ['폭력', '상해', '폭행행위등', '강도', '강간', '방화']
-        
-        # 1. Economic Crime Logic (Living Standard)
-        if crime_type in economic_crimes:
-            st.markdown(f"**🔍 분석:** **'{crime_type}'**은(는) **경제적/생계형 범죄** 유형에 속하며, **'생활정도'**가 중요한 개입 변수입니다.")
-            
-            if living == '하':
-                st.error("🚨 **위험 요인 감지:** 경제적 결핍(생활정도: 하)이 식별되었습니다.")
-                st.markdown("👉 **Action:** [Economic Support] 직업 훈련, 취업 알선, 긴급 생계비 지원 프로그램")
-                
-                # What-if: Living Standard
-                st.markdown("#### ✨ 효과 예측 (Simulation: 경제 지원)")
-                st.write("만약 생활 수준이 **'중'**으로 개선된다면?")
-                
-                improved_input = input_data.copy()
-                improved_input['생활정도'] = le_dict['생활정도'].transform(['중'])[0]
-                new_prob = model.predict_proba(improved_input[feature_cols])[0][heavy_idx] * 100
-                delta = risk_score - new_prob
-                
-                st.metric(label="예상 재범 위험도 감소", value=f"{new_prob:.1f}%", delta=f"-{delta:.1f}%p (개선 효과)")
-            else:
-                 st.success("✅ 경제적 환경은 비교적 양호합니다. 상습성(전과) 관리에 집중하세요.")
+        # 3. Habitual/Strict Crimes: Theft, Fraud, etc.
+        habitual_crimes = ['절도', '사기', '장물']
 
-        # 2. Violent Crime Logic (Parental Relations)
-        elif crime_type in violent_crimes:
-            st.markdown(f"**🔍 분석:** **'{crime_type}'**은(는) **충동/폭력성 범죄** 유형이며, **'부모관계(정서적지지)'**가 핵심입니다.")
+        # Logic 1: Social Crimes -> Parental Relations (Parents)
+        if crime_type in social_crimes:
+            st.markdown(f"**🔍 분석:** **'{crime_type}'** 유형은 지능적/사회적 범죄로, **'부모관계(가정환경)'**가 처분 결정의 중요 변수입니다.")
             
             if parents == '불화':
-                st.error("🚨 **위험 요인 감지:** 부모와의 불화가 심각하여 정서적 불안정이 우려됩니다.")
-                st.markdown("👉 **Action:** [Family First] 부모 동반 가족 상담, 관계 회복 프로그램 필수 이수")
+                st.error("🚨 **위험 요인 감지:** 가정 내 불화가 식별되었습니다.")
+                st.markdown("👉 **Action:** [Family First] 부모 동반 가족 상담 및 관계 회복 프로그램")
                 
                 # What-if: Parents
                 st.markdown("#### ✨ 효과 예측 (Simulation: 가족 관계 회복)")
@@ -274,15 +257,38 @@ elif menu == "3. [핵심] 액션플랜 시뮬레이터":
                 
                 st.metric(label="예상 재범 위험도 감소", value=f"{new_prob:.1f}%", delta=f"-{delta:.1f}%p (개선 효과)", delta_color="normal")
             else:
-                st.success("✅ 가정 지지 기반이 양호합니다. 멘토링 프로그램 등을 추천합니다.")
-        
-        # 3. Other Crimes - Allow generic simulation
-        else:
-            st.markdown(f"**🔍 분석:** **'{crime_type}'** 유형은 복합적인 요인이 작용합니다. (전과 및 동기 위주 스크리닝)")
+                st.success("✅ 가정 환경이 양호합니다. 준법 교육에 집중하세요.")
+
+        # Logic 2: Violent Crimes -> Living Standard (Economy) - NEW FINDING
+        elif crime_type in violent_crimes:
+            st.markdown(f"**🔍 분석:** **'{crime_type}'** 유형은 의외로 **'생활정도(경제적 빈곤)'**와 높은 상관관계를 보입니다.")
             
-            # Allow manual simulation for any type
-            st.markdown("#### ✨ 사용자 정의 시뮬레이션")
-            target_var = st.selectbox("개선할 환경 변수 선택", ["부모관계 개선 (불화→원만)", "경제지원 (하→중)"])
+            if living == '하':
+                st.error("🚨 **위험 요인 감지:** 경제적 결핍(생활정도: 하)으로 인한 스트레스가 우려됩니다.")
+                st.markdown("👉 **Action:** [Economic Support] 긴급 생계 지원 및 심리 상담 병행")
+                
+                # What-if: Living Standard
+                st.markdown("#### ✨ 효과 예측 (Simulation: 경제 지원)")
+                st.write("만약 생활 수준이 **'중'**으로 개선된다면?")
+                
+                improved_input = input_data.copy()
+                improved_input['생활정도'] = le_dict['생활정도'].transform(['중'])[0]
+                new_prob = model.predict_proba(improved_input[feature_cols])[0][heavy_idx] * 100
+                delta = risk_score - new_prob
+                
+                st.metric(label="예상 재범 위험도 감소", value=f"{new_prob:.1f}%", delta=f"-{delta:.1f}%p (개선 효과)")
+            else:
+                 st.success("✅ 경제적 환경은 양호합니다. 멘토링 프로그램 등을 추천합니다.")
+
+        # Logic 3: Theft/Habitual -> Strict Monitoring (No specific env variable)
+        elif crime_type in habitual_crimes:
+            st.markdown(f"**🔍 분석:** **'{crime_type}'** 유형은 환경 변수보다 **범행 사실 그 자체(상습성)**가 중요합니다.")
+            st.warning("⚠️ **Zero-Tolerance Warning:** 즉각적인 재범 방지 교육과 엄격한 감독이 필요합니다.")
+            st.markdown("👉 **Action:** 보호관찰 강화 및 주 1회 준법 교육 이수 명령")
+            
+            # Allow manual simulation anyway
+            st.markdown("#### ✨ 사용자 정의 시뮬레이션 (선택)")
+            target_var = st.selectbox("추가적인 환경 개선을 시도하시겠습니까?", ["부모관계 개선", "경제지원"], key="manual_sim")
             
             if target_var == "부모관계 개선 (불화→원만)":
                 improved_input = input_data.copy()
